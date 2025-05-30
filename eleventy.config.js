@@ -1,39 +1,97 @@
-import { IdAttributePlugin, InputPathToUrlTransformPlugin, HtmlBasePlugin } from "@11ty/eleventy";
+import {
+	IdAttributePlugin,
+	InputPathToUrlTransformPlugin,
+	HtmlBasePlugin,
+} from "@11ty/eleventy";
 import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import pluginSyntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import pluginNavigation from "@11ty/eleventy-navigation";
-import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
+import { eleventyImageTransformPlugin as pluginImageTransform } from "@11ty/eleventy-img";
 
-import pluginFilters from "./_config/filters.js";
+import pluginPageAssets from "eleventy-plugin-page-assets";
+import pluginSVGSprite from "eleventy-plugin-svg-sprite";
+import pluginFilters from "./utils/filters.js";
+import transforms from "./utils/transforms.js";
+import shortcodes from "./utils/shortcodes.js";
 
-/** @param {import("@11ty/eleventy").UserConfig} eleventyConfig */
-export default async function(eleventyConfig) {
-	// Drafts, see also _data/eleventyDataSchema.js
-	eleventyConfig.addPreprocessor("drafts", "*", (data, content) => {
-		if(data.draft && process.env.ELEVENTY_RUN_MODE === "build") {
-			return false;
-		}
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const CONTENT_GLOBS = {
+	posts: "src/posts/**/*.md",
+	drafts: "src/drafts/**/*.md",
+	notes: "src/notes/*.md",
+	media: "*.jpg|*.png|*.gif|*.mp4|*.webp|*.webm",
+};
+
+/** @param {import("@11ty/eleventy").UserConfig} config */
+export default async function (config) {
+	// Plugins
+	config.addPlugin(pluginPageAssets, {
+		mode: "directory",
+		postsMatching: "src/posts/*/*.md",
+		assetsMatching: CONTENT_GLOBS.media,
+		silent: true,
 	});
+	config.addPlugin(pluginSVGSprite, {
+		path: "./src/assets/icons",
+		outputFilepath: "./dist/assets/icons/icons.sprite.svg",
+	});
+	config.addPlugin(pluginImageTransform, {
+		extensions: "html",
+		formats: ["avif", "auto"],
+		outputDir: "./dist/assets/images/processed/",
+		urlPath: "/assets/images/processed/",
+		widths: ["auto"],
+		defaultAttributes: {
+			loading: "lazy",
+			decoding: "async",
+		},
+	});
+
+	config.addLayoutAlias("base", "base.njk");
+	config.addLayoutAlias("home", "home.njk");
+	config.addLayoutAlias("page", "page.njk");
+	config.addLayoutAlias("post", "post.njk");
+	config.addLayoutAlias("draft", "draft.njk");
+	config.addLayoutAlias("note", "note.njk");
 
 	// Copy the contents of the `public` folder to the output folder
 	// For example, `./public/css/` ends up in `_site/css/`
-	eleventyConfig
-		.addPassthroughCopy({
-			"./public/": "/"
-		})
-		.addPassthroughCopy("./content/feed/pretty-atom-feed.xsl");
+	config.addPassthroughCopy("src/pretty-atom-feed.xsl");
+	config.addPassthroughCopy("src/site.webmanifest");
+	config.addPassthroughCopy("src/robots.txt");
+	config.addPassthroughCopy("src/assets/images");
+	config.addPassthroughCopy("src/assets/fonts");
+
+	// Collections: Posts
+	config.addCollection("posts", function (collection) {
+		return collection
+			.getFilteredByGlob(CONTENT_GLOBS.posts)
+			.filter((item) => item.data.permalink !== false)
+			.filter((item) => !(item.data.draft && IS_PRODUCTION));
+	});
+
+	// Collections: Drafts
+	config.addCollection("drafts", function (collection) {
+		return collection
+			.getFilteredByGlob(CONTENT_GLOBS.drafts)
+			.filter((item) => item.data.permalink !== false);
+	});
+
+	// Collections: Notes
+	config.addCollection("notes", function (collection) {
+		return collection.getFilteredByGlob(CONTENT_GLOBS.notes).reverse();
+	});
 
 	// Run Eleventy when these files change:
 	// https://www.11ty.dev/docs/watch-serve/#add-your-own-watch-targets
 
-	// Watch CSS files
-	eleventyConfig.addWatchTarget("css/**/*.css");
-	// Watch images for the image pipeline.
-	eleventyConfig.addWatchTarget("content/**/*.{svg,webp,png,jpg,jpeg,gif}");
+	// Asset Watch Targets
+
+	config.addWatchTarget("./src/assets");
 
 	// Per-page bundles, see https://github.com/11ty/eleventy-plugin-bundle
 	// Bundle <style> content and adds a {% css %} paired shortcode
-	eleventyConfig.addBundle("css", {
+	config.addBundle("css", {
 		toFileDirectory: "dist",
 		// Add all <style> content to `css` bundle (use eleventy:ignore to opt-out)
 		// supported selectors: https://www.npmjs.com/package/posthtml-match-helper
@@ -41,7 +99,7 @@ export default async function(eleventyConfig) {
 	});
 
 	// Bundle <script> content and adds a {% js %} paired shortcode
-	eleventyConfig.addBundle("js", {
+	config.addBundle("js", {
 		toFileDirectory: "dist",
 		// Add all <script> content to the `js` bundle (use eleventy:ignore to opt-out)
 		// supported selectors: https://www.npmjs.com/package/posthtml-match-helper
@@ -49,26 +107,27 @@ export default async function(eleventyConfig) {
 	});
 
 	// Official plugins
-	eleventyConfig.addPlugin(pluginSyntaxHighlight, {
-		preAttributes: { tabindex: 0 }
+	config.addPlugin(pluginSyntaxHighlight, {
+		preAttributes: { tabindex: 0 },
 	});
-	eleventyConfig.addPlugin(pluginNavigation);
-	eleventyConfig.addPlugin(HtmlBasePlugin);
-	eleventyConfig.addPlugin(InputPathToUrlTransformPlugin);
+	config.addPlugin(pluginNavigation);
+	config.addPlugin(HtmlBasePlugin);
+	config.addPlugin(InputPathToUrlTransformPlugin);
 
-	eleventyConfig.addPlugin(feedPlugin, {
+	config.addShortcode("icon", shortcodes.icon);
+	config.addPlugin(feedPlugin, {
 		type: "atom", // or "rss", "json"
-		outputPath: "/feed/feed.xml",
+		outputPath: "/feed.xml",
 		stylesheet: "pretty-atom-feed.xsl",
 		templateData: {
 			eleventyNavigation: {
-				key: "Feed",
-				order: 4
-			}
+				key: "besleme",
+				order: 5,
+			},
 		},
 		collection: {
 			name: "posts",
-			limit: 10,
+			limit: 0,
 		},
 		metadata: {
 			language: "en",
@@ -76,13 +135,13 @@ export default async function(eleventyConfig) {
 			subtitle: "This is a longer description about your blog.",
 			base: "https://example.com/",
 			author: {
-				name: "Your Name"
-			}
-		}
+				name: "Your Name",
+			},
+		},
 	});
 
 	// Image optimization: https://www.11ty.dev/docs/plugins/image/#eleventy-transform
-	eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
+	/* config.addPlugin(eleventyImageTransformPlugin, {
 		// Output formats for each image.
 		formats: ["avif", "webp", "auto"],
 
@@ -94,25 +153,30 @@ export default async function(eleventyConfig) {
 				// e.g. <img loading decoding> assigned on the HTML tag will override these values.
 				loading: "lazy",
 				decoding: "async",
-			}
+			},
 		},
 
 		sharpOptions: {
 			animated: true,
 		},
-	});
+	}); */
 
 	// Filters
-	eleventyConfig.addPlugin(pluginFilters);
+	config.addPlugin(pluginFilters);
 
-	eleventyConfig.addPlugin(IdAttributePlugin, {
+	// Transforms
+	Object.keys(transforms).forEach((transformName) => {
+		config.addTransform(transformName, transforms[transformName]);
+	});
+
+	config.addPlugin(IdAttributePlugin, {
 		// by default we use Eleventy’s built-in `slugify` filter:
-		// slugify: eleventyConfig.getFilter("slugify"),
+		// slugify: config.getFilter("slugify"),
 		// selector: "h1,h2,h3,h4,h5,h6", // default
 	});
 
-	eleventyConfig.addShortcode("currentBuildDate", () => {
-		return (new Date()).toISOString();
+	config.addShortcode("currentBuildDate", () => {
+		return new Date().toISOString();
 	});
 
 	// Features to make your build faster (when you need them)
@@ -121,19 +185,12 @@ export default async function(eleventyConfig) {
 	// to emulate the file copy on the dev server. Learn more:
 	// https://www.11ty.dev/docs/copy/#emulate-passthrough-copy-during-serve
 
-	// eleventyConfig.setServerPassthroughCopyBehavior("passthrough");
-};
-
+	// config.setServerPassthroughCopyBehavior("passthrough");
+}
 export const config = {
 	// Control which files Eleventy will process
 	// e.g.: *.md, *.njk, *.html, *.liquid
-	templateFormats: [
-		"md",
-		"njk",
-		"html",
-		"liquid",
-		"11ty.js",
-	],
+	templateFormats: ["njk", "md", "11ty.js"],
 
 	// Pre-process *.md files with: (default: `liquid`)
 	markdownTemplateEngine: "njk",
@@ -143,10 +200,11 @@ export const config = {
 
 	// These are all optional:
 	dir: {
-		input: "content",          // default: "."
-		includes: "../_includes",  // default: "_includes" (`input` relative)
-		data: "../_data",          // default: "_data" (`input` relative)
-		output: "_site"
+		input: "src", // default: "."
+		output: "dist",
+		includes: "includes", // default: "_includes" (`input` relative)
+		layouts: "layouts",
+		data: "data", // default: "_data" (`input` relative)
 	},
 
 	// -----------------------------------------------------------------

@@ -1,0 +1,15 @@
+---
+layout: base
+tags: nav
+title: blog
+eleventyNavigation:
+  key: blog
+  order: 2
+permalink: /blog/
+---
+<h1>arşiv</h1>
+
+<section>
+{% set postslist = collections.posts %}
+{% include "postslist.njk" %}
+</section>

@@ -4,7 +4,7 @@
 	"description": "A starter repository for a blog web site using the Eleventy site generator.",
 	"type": "module",
 	"scripts": {
-		"build": "npx @11ty/eleventy",
+		"build": "NODE_ENV=production npx @11ty/eleventy",
 		"build-nocolor": "cross-env NODE_DISABLE_COLORS=1 npx @11ty/eleventy",
 		"build-ghpages": "npx @11ty/eleventy --pathprefix=/eleventy-base-blog/",
 		"start": "npx @11ty/eleventy --serve --quiet",
@@ -47,6 +47,9 @@
 		"zod-validation-error": "^3.4.1"
 	},
 	"dependencies": {
-		"@zachleat/heading-anchors": "^1.0.3"
+		"@zachleat/heading-anchors": "^1.0.3",
+		"eleventy-plugin-page-assets": "^0.3.0",
+		"eleventy-plugin-svg-sprite": "^2.4.4",
+		"html-minifier": "^4.0.0"
 	}
 }
