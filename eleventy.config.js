@@ -25,7 +25,24 @@ const CONTENT_GLOBS = {
 
 export default function (config) {
 	// Plugins
-	config.addPlugin(pluginRss);
+	config.addPlugin(pluginRss, {
+		type: "atom", // or "rss", "json"
+		outputPath: "/feed.xml",
+		stylesheet: "pretty-atom-feed.xsl",
+		collection: {
+			name: "posts",
+			limit: 10,
+		},
+		metadata: {
+			language: "en",
+			title: "Blog Title",
+			subtitle: "This is a longer description about your blog.",
+			base: "https://example.com/",
+			author: {
+				name: "Your Name",
+			},
+		},
+	});
 	config.addPlugin(pluginNavigation);
 	config.addPlugin(pluginSyntaxHighlight);
 	config.addPlugin(pluginPageAssets, {

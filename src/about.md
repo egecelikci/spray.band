@@ -14,16 +14,16 @@ biz SPRAY.
 
 ## bizi dinleyin!
 
-{%- for platform, details in metadata.author.social %}
-
-- [{% icon platform %} {{ platform }}]({{ details.url }})
-  {%- endfor %}
-
-## bizi takip edin!
-
 {%- for platform, details in metadata.author.dsp %}
 
 - [{% icon "music" %} {{ platform }}]({{ details.url }})
+  {%- endfor %}
+
+## bizi takip edin!
+
+{%- for platform, details in metadata.author.social %}
+
+- [{% icon platform %} {{ platform }}]({{ details.url }})
   {%- endfor %}
 
 ## iletişim
