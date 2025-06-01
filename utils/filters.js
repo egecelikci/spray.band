@@ -1,23 +1,135 @@
 import { DateTime } from "luxon";
+import random from "lodash/random.js";
 
-export default function (eleventyConfig) {
-	eleventyConfig.addFilter("readableDate", (dateObj, format, zone, locale) => {
-		// Formatting tokens for Luxon: https://moment.github.io/luxon/#/formatting?id=table-of-tokens
-		return DateTime.fromJSDate(dateObj, {
+export default {
+	readableDate: function (date, format, zone, locale) {
+		// default to Europe/Vienna Timezone
+		const dt = DateTime.fromJSDate(date, {
+			zone: "Europe/Istanbul",
 			zone: zone || "Europe/Istanbul",
 			locale: locale || "tr-TR",
-		}).toFormat(format || "dd LLLL yyyy");
-	});
+		});
+		if (!format) {
+			format = dt.hour + dt.minute > 0 ? "dd LLL yyyy - HH:mm" : "dd LLL yyyy";
+		}
+		return dt.toFormat(format);
+	},
 
-	eleventyConfig.addFilter("htmlDateString", (dateObj) => {
+	htmlDateString: function (dateObj) {
 		// dateObj input: https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#valid-date-string
 		return DateTime.fromJSDate(dateObj, {
 			zone: "Europe/Istanbul",
 		}).toFormat("yyyy-LL-dd");
-	});
+	},
 
-	// Get the first `n` elements of a collection.
-	eleventyConfig.addFilter("head", (array, n) => {
+	dateToFormat: function (date, format) {
+		return DateTime.fromJSDate(date, { zone: "utc" }).toFormat(String(format));
+	},
+
+	dateToISO: function (date) {
+		return DateTime.fromJSDate(date, { zone: "utc" }).toISO({
+			includeOffset: false,
+			suppressMilliseconds: true,
+		});
+	},
+
+	dateFromISO: function (timestamp) {
+		return DateTime.fromISO(timestamp, { zone: "utc" }).toJSDate();
+	},
+
+	humanizeNumber: function (num) {
+		if (num > 999) {
+			return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+		}
+		return num;
+	},
+
+	obfuscate: function (str) {
+		const chars = [];
+		for (var i = str.length - 1; i >= 0; i--) {
+			chars.unshift(["&#", str[i].charCodeAt(), ";"].join(""));
+		}
+		return chars.join("");
+	},
+
+	slice: function (array, start, end) {
+		return end ? array.slice(start, end) : array.slice(start);
+	},
+
+	stringify: function (json) {
+		return JSON.stringify(json);
+	},
+
+	excludePost: function (allPosts, currentPost) {
+		return allPosts.filter((post) => post.inputPath !== currentPost.inputPath);
+	},
+
+	currentPage: function (allPages, currentPage) {
+		const matches = allPages.filter(
+			(page) => page.inputPath === currentPage.inputPath
+		);
+		if (matches && matches.length) {
+			return matches[0];
+		}
+		return null;
+	},
+
+	excerpt: function (content) {
+		const excerptMinimumLength = 80;
+		const excerptSeparator = "<!--more-->";
+		const findExcerptEnd = (content) => {
+			if (content === "") {
+				return 0;
+			}
+
+			const paragraphEnd = content.indexOf("</p>", 0) + 4;
+			if (paragraphEnd < excerptMinimumLength) {
+				return (
+					paragraphEnd +
+					findExcerptEnd(content.substring(paragraphEnd), paragraphEnd)
+				);
+			}
+
+			return paragraphEnd;
+		};
+
+		if (!content) {
+			return;
+		}
+
+		if (content.includes(excerptSeparator)) {
+			return content.substring(0, content.indexOf(excerptSeparator));
+		} else if (content.length <= excerptMinimumLength) {
+			return content;
+		}
+
+		const excerptEnd = findExcerptEnd(content);
+		return content.substring(0, excerptEnd);
+	},
+
+	randomItem: function (arr) {
+		return arr[random(arr.length - 1)];
+	},
+
+	shuffle: function (arr) {
+		let m = arr.length,
+			t,
+			i;
+
+		while (m) {
+			i = Math.floor(Math.random() * m--);
+			t = arr[m];
+			arr[m] = arr[i];
+			arr[i] = t;
+		}
+
+		return arr;
+	},
+
+	findById: function (array, id) {
+		return array.find((i) => i.id === id);
+	},
+	head: function (array, n) {
 		if (!Array.isArray(array) || array.length === 0) {
 			return [];
 		}
@@ -26,38 +138,17 @@ export default function (eleventyConfig) {
 		}
 
 		return array.slice(0, n);
-	});
-
-	// Return the smallest number argument
-	eleventyConfig.addFilter("min", (...numbers) => {
+	},
+	min: function (...numbers) {
 		return Math.min.apply(null, numbers);
-	});
-
-	// Return the keys used in an object
-	eleventyConfig.addFilter("getKeys", (target) => {
+	},
+	getKeys: function (target) {
 		return Object.keys(target);
-	});
-
-	eleventyConfig.addFilter("filterTagList", function filterTagList(tags) {
+	},
+	filterTagList: function filterTagList(tags) {
 		return (tags || []).filter((tag) => ["all", "posts"].indexOf(tag) === -1);
-	});
-
-	eleventyConfig.addFilter("sortAlphabetically", (strings) =>
-		(strings || []).sort((b, a) => b.localeCompare(a))
-	);
-
-	eleventyConfig.addFilter("obfuscate", (strings) => {
-		const chars = [];
-		for (var i = strings.length - 1; i >= 0; i--) {
-			chars.unshift(["&#", strings[i].charCodeAt(), ";"].join(""));
-		}
-		return chars.join("");
-	});
-
-	eleventyConfig.addFilter("dateToISO", (date) => {
-		return DateTime.fromJSDate(date, { zone: "utc" }).toISO({
-			includeOffset: false,
-			suppressMilliseconds: true,
-		});
-	});
-}
+	},
+	sortAlphabetically: function (strings) {
+		(strings || []).sort((b, a) => b.localeCompare(a));
+	},
+};

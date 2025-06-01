@@ -16,10 +16,11 @@ const eleventyComputed = {
 		return `/tags/${this.slugify(data.tag)}/`;
 	}
 };
+const layout = "base"
 ---
 <h1>Tagged “{{ tag }}”</h1>
 
 {% set postslist = collections[ tag ] %}
 {% include "postslist.njk" %}
 
-<p>See <a href="tags.njk">all tags</a>.</p>
+<p>See <a href="/tags">all tags</a>.</p>
