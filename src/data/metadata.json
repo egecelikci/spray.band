@@ -10,22 +10,22 @@
 		"email": "sprayband@gmail.com",
 		"url": "https://sprayband.netlify.app/about",
 		"dsp": {
-			"Apple Music": {
+			"apple music": {
 				"url": "https://music.apple.com/artist/1628818142"
 			},
-			"Bandcamp": {
+			"bandcamp": {
 				"url": "https://sprayband.bandcamp.com/"
 			},
-			"Deezer": {
+			"deezer": {
 				"url": "https://www.deezer.com/artist/430971"
 			},
-			"SoundCloud": {
+			"soundcloud": {
 				"url": "https://soundcloud.com/spray-band"
 			},
-			"Spotify": {
+			"spotify": {
 				"url": "https://open.spotify.com/artist/2E5fEHMTWt7VAyiYgZGDW4"
 			},
-			"Tidal": {
+			"tidal": {
 				"url": "https://tidal.com/artist/44817947"
 			}
 		},
@@ -33,7 +33,7 @@
 			"Instagram": {
 				"url": "https://www.instagram.com/spray.band"
 			},
-			"YouTube": {
+			"youtube": {
 				"url": "https://www.youtube.com/channel/UCQ0Rk2Gpb3k7DQvkRcv8jkg"
 			}
 		}
