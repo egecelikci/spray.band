@@ -13,6 +13,8 @@
         {% if not build.dev and not build.naked %}
             {% viteLinkStylesheetTags %}
         {% endif %}
+
+        {% include "meta.njk" %}
 	</head>
 	<body>
 		<a href="#main" id="skip-link" class="visually-hidden">Skip to main content</a>
@@ -20,7 +22,7 @@
 		<header>
 			<a href="/" class="home-link">
                     <img
-                        src="{{ '/assets/images/icon_cropped.png' | url }}"
+                        src="{{ '/assets/images/icon.png' | url }}"
                         width="81" height="38" alt="SPRAY"
                     />
 			</a>

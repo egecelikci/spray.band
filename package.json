@@ -8,11 +8,12 @@
 		"dev": "run-p 'dev:*' --print-label",
 		"dev:eleventy": "eleventy --serve",
 		"dev:vite": "vite",
-		"build": "NODE_ENV=production run-s clean build:vite build:eleventy clean:vite --print-label",
+		"build": "NODE_ENV=production run-s clean build:vite build:eleventy workbox clean:vite --print-label",
 		"build:eleventy": "eleventy",
 		"build:vite": "vite build",
 		"clean": "del-cli dist",
 		"clean:vite": "del-cli dist/.vite",
+		"workbox": "workbox generateSW workbox.config.cjs",
 		"debug": "cross-env DEBUG=Eleventy* npm run start",
 		"debugstart": "cross-env DEBUG=Eleventy* npx @11ty/eleventy --serve --quiet",
 		"benchmark": "cross-env DEBUG=Eleventy:Benchmark* npx @11ty/eleventy"
@@ -49,6 +50,7 @@
 		"luxon": "^3.6.1",
 		"npm-run-all": "^4.1.5",
 		"prismjs": "^1.30.0",
+		"workbox-cli": "^7.3.0",
 		"zod": "^3.24.4",
 		"zod-validation-error": "^3.4.1"
 	},
