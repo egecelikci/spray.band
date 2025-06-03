@@ -4,7 +4,7 @@ tags: nav
 title: hakkımızda
 eleventyNavigation:
   key: hakkımızda
-  order: 3
+  order: 4
 permalink: /about/
 ---
 

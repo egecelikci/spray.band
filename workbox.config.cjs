@@ -1,7 +1,7 @@
 module.exports = {
 	cacheId: "spray",
 	globDirectory: "./dist",
-	globPatterns: ["**/*.woff2"],
+	globPatterns: ["**/*.woff2", "**/*.ttf"],
 	swDest: "./dist/sw.js",
 	sourcemap: false,
 	cleanupOutdatedCaches: true,

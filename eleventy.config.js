@@ -28,10 +28,10 @@ export default function (config) {
 	config.addPlugin(pluginRss, {
 		type: "atom", // or "rss", "json"
 		outputPath: "/feed.xml",
-		stylesheet: "pretty-atom-feed.xsl",
+		stylesheet: "./src/feed/pretty-atom-feed.xsl",
 		collection: {
 			name: "posts",
-			limit: 10,
+			limit: 0,
 		},
 		metadata: {
 			language: "en",
@@ -102,6 +102,7 @@ export default function (config) {
 	config.addPassthroughCopy("src/robots.txt");
 	config.addPassthroughCopy("src/assets/images");
 	config.addPassthroughCopy("src/assets/fonts");
+	config.addPassthroughCopy("src/pages/feed/pretty-atom-feed.xsl");
 
 	// Deep-Merge
 	config.setDataDeepMerge(true);
