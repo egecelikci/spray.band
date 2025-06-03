@@ -22,7 +22,7 @@
 		<header>
 			<a href="/" class="home-link">
                     <img
-                        src="{{ '/assets/images/icon.png' | url }}"
+                        src="{{ '/assets/images/icon_cropped.png' | url }}"
                         width="81" height="38" alt="SPRAY"
                     />
 			</a>
@@ -46,7 +46,7 @@
 		<footer>
 			<p>
 			{#- <strong>&copy; 2025&ndash;{{ build.timestamp | dateToFormat('yyyy') }}</strong><br /> #}
-				<a class="p-name u-url" rel="me" href="{{ site.url }}">{{ author.name }}</a>
+				<a class="p-name u-url" rel="me" href="{{ site.url }}">{{ metadata.author.name }}</a>
 			</p>
 			<p>
 				<a href="{{ metadata.repo }}/tree/master/{{ page.inputPath }}">
